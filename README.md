@@ -2,6 +2,20 @@
 
 Catalogue local interactif de commandes R pour Stat 1.
 
+## Dépendances nécessaires
+
+Pour utiliser le site:
+
+- macOS si tu veux lancer les fichiers `Lancer SiteStat.command` et
+  `Arreter SiteStat.command`.
+- Node.js `20.19.0` ou plus récent, ou Node.js `22.12.0` ou plus récent.
+- npm, installé avec Node.js.
+- Un navigateur web moderne.
+- Une connexion Internet au premier lancement pour installer les dépendances npm.
+
+R n'est pas nécessaire pour lancer le site: les commandes R sont affichées,
+expliquées et copiables, mais elles ne sont pas exécutées par l'application.
+
 ## Lancer en local
 
 Sur macOS, double-cliquer sur `Lancer SiteStat.command`.
