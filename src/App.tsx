@@ -27,10 +27,13 @@ import type {
   ThemeDefinition,
   ThemeId
 } from "./types";
+import TheoryPage from "./TheoryPage";
 import { filterCommands, groupByTheme, normalizeText } from "./utils/search";
 
 const themeById = new Map(themes.map((theme) => [theme.id, theme]));
 const sourceById = new Map(sourceRefs.map((source) => [source.id, source]));
+
+type AppView = "catalogue" | "theorie";
 
 function copyWithFallback(text: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
@@ -295,6 +298,9 @@ function CommandCard({
       <div className="source-row">
         {entry.sourceRefs.map((sourceId) => {
           const source = sourceById.get(sourceId)!;
+          if (!source.url) {
+            return <span key={source.id}>{source.label}</span>;
+          }
           return (
             <a key={source.id} href={source.url} target="_blank" rel="noreferrer">
               {source.label}
@@ -308,6 +314,7 @@ function CommandCard({
 }
 
 function App() {
+  const [activeView, setActiveView] = useState<AppView>("catalogue");
   const [query, setQuery] = useState("");
   const [selectedThemes, setSelectedThemes] = useState<ThemeId[]>([]);
   const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
@@ -417,6 +424,14 @@ function App() {
     setSelectedLegendKinds([]);
   }
 
+  function openCommandFromTheory(commandQuery: string) {
+    setQuery(commandQuery);
+    setSelectedThemes([]);
+    setSelectedPackages([]);
+    setActiveView("catalogue");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -446,8 +461,31 @@ function App() {
         </button>
       </header>
 
+      <nav className="view-tabs" aria-label="Navigation principale">
+        <button
+          type="button"
+          className={activeView === "catalogue" ? "is-active" : ""}
+          aria-pressed={activeView === "catalogue"}
+          onClick={() => setActiveView("catalogue")}
+        >
+          Catalogue R
+        </button>
+        <button
+          type="button"
+          className={activeView === "theorie" ? "is-active" : ""}
+          aria-pressed={activeView === "theorie"}
+          onClick={() => setActiveView("theorie")}
+        >
+          Théorie
+        </button>
+      </nav>
+
       <main>
-        <section className="controls" aria-label="Recherche et filtres">
+        {activeView === "theorie" ? (
+          <TheoryPage onCommandSearch={openCommandFromTheory} />
+        ) : (
+          <>
+            <section className="controls" aria-label="Recherche et filtres">
           <div className="search-panel">
             <label className="search-box" htmlFor="command-search">
               <Search size={21} aria-hidden="true" />
@@ -512,9 +550,9 @@ function App() {
               </div>
             </div>
           </div>
-        </section>
+            </section>
 
-        <section className="result-bar" aria-live="polite">
+            <section className="result-bar" aria-live="polite">
           <div>
             <Layers size={19} />
             <strong>{filteredCommands.length}</strong>
@@ -531,9 +569,9 @@ function App() {
           {shutdownState === "error" ? (
             <p role="alert">Arrêt web indisponible. Utilise Arreter SiteStat.command.</p>
           ) : null}
-        </section>
+            </section>
 
-        <LegendPanel
+            <LegendPanel
           query={legendQuery}
           selectedKinds={selectedLegendKinds}
           filteredEntries={filteredLegendEntries}
@@ -542,9 +580,9 @@ function App() {
             setSelectedLegendKinds((current) => toggleValue(current, kind))
           }
           onClear={resetLegendFilters}
-        />
+            />
 
-        <section className="command-sections" aria-label="Résultats">
+            <section className="command-sections" aria-label="Résultats">
           {themes.map((theme) => {
             const entries = groupedCommands[theme.id];
             if (entries.length === 0) {
@@ -581,7 +619,9 @@ function App() {
               <p>Modifie la recherche ou retire un filtre.</p>
             </div>
           ) : null}
-        </section>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

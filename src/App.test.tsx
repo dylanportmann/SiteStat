@@ -10,6 +10,10 @@ describe("App", () => {
       },
       configurable: true
     });
+    Object.defineProperty(window, "scrollTo", {
+      value: vi.fn(),
+      configurable: true
+    });
   });
 
   it("affiche le catalogue et filtre la recherche", () => {
@@ -100,5 +104,89 @@ describe("App", () => {
     expect(
       within(card!).getByText('t.test(x, mu = 0, alternative = "less")')
     ).toBeInTheDocument();
+  });
+
+  it("affiche la page théorie complète", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+
+    expect(screen.getByText("Guide complet de revision")).toBeInTheDocument();
+    expect(screen.getByText("Variables, collecte et plan d'etude")).toBeInTheDocument();
+    expect(screen.getByText("Erreurs de decision et puissance")).toBeInTheDocument();
+  });
+
+  it("recherche dans les fiches de théorie", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.change(screen.getByLabelText("Rechercher dans la théorie"), {
+      target: { value: "score z" }
+    });
+
+    expect(screen.getByText("Loi normale et score z")).toBeInTheDocument();
+    expect(screen.queryByText("Test d'hypothese et p-value")).not.toBeInTheDocument();
+  });
+
+  it("affiche un schéma pédagogique dans les fiches de théorie", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.change(screen.getByLabelText("Rechercher dans la théorie"), {
+      target: { value: "boxplot iqr" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Tout ouvrir" }));
+
+    expect(
+      screen.getByRole("img", { name: /Schema du boxplot et de l'IQR/i })
+    ).toBeInTheDocument();
+  });
+
+  it("retrouve une fiche via le texte d'un schéma", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.change(screen.getByLabelText("Rechercher dans la théorie"), {
+      target: { value: "matrice decision" }
+    });
+
+    expect(screen.getByText("Erreur de type I et type II")).toBeInTheDocument();
+  });
+
+  it("filtre la théorie par thème", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.click(screen.getByRole("button", { name: /Erreurs/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Tout ouvrir" }));
+
+    expect(screen.getByText("Erreurs de decision et puissance")).toBeInTheDocument();
+    expect(screen.queryByText("Loi normale et score z")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Matrice des decisions/i })).toBeInTheDocument();
+  });
+
+  it("ouvre et ferme les fiches de théorie en lot", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tout ouvrir" }));
+
+    expect(screen.getByRole("button", { name: "Tout fermer" })).toBeInTheDocument();
+  });
+
+  it("revient au catalogue depuis une commande liée dans la théorie", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Théorie" }));
+    fireEvent.change(screen.getByLabelText("Rechercher dans la théorie"), {
+      target: { value: "famille des tests t" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Tout ouvrir" }));
+    fireEvent.click(screen.getByRole("button", { name: /t\.test\(x, mu=\)/i }));
+
+    expect(screen.getByRole("button", { name: "Catalogue R" })).toHaveClass("is-active");
+    expect(screen.getByLabelText("Rechercher une commande, un thème, un mot-clé...")).toHaveValue(
+      "t.test(x, mu = 0)"
+    );
   });
 });

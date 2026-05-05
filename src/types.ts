@@ -57,11 +57,81 @@ export interface LegendEntry {
 export interface SourceRef {
   id: SourceRefId;
   label: string;
-  url: string;
+  url?: string;
 }
 
 export interface CommandFilters {
   query: string;
   themes: ThemeId[];
   packages: string[];
+}
+
+export interface TheorySource {
+  id: string;
+  label: string;
+  url?: string;
+}
+
+export interface TheoryCommandLink {
+  commandId: string;
+  label: string;
+}
+
+export interface TheoryFormula {
+  label: string;
+  expression: string;
+  explanation: string;
+}
+
+export type TheorySchemaVariant =
+  | "population-flow"
+  | "variable-tree"
+  | "randomization-plan"
+  | "center-skew"
+  | "boxplot-iqr"
+  | "graph-choices"
+  | "probability-events"
+  | "normal-z"
+  | "t-vs-normal"
+  | "scientific-cycle"
+  | "sampling-distribution"
+  | "hypothesis-pvalue"
+  | "t-test-choice"
+  | "error-matrix"
+  | "alternative-tails";
+
+export interface TheorySchema {
+  id: string;
+  title: string;
+  description: string;
+  variant: TheorySchemaVariant;
+  labels: string[];
+}
+
+export interface TheoryCard {
+  id: string;
+  title: string;
+  summary: string;
+  definition: string;
+  intuition: string;
+  details: string[];
+  formulas?: TheoryFormula[];
+  conditions?: string[];
+  interpretation?: string[];
+  pitfalls?: string[];
+  example?: string;
+  schemas?: TheorySchema[];
+  commandLinks: TheoryCommandLink[];
+  tags: string[];
+}
+
+export interface TheorySection {
+  id: Exclude<ThemeId, "base">;
+  title: string;
+  shortTitle: string;
+  courseRef: string;
+  intro: string;
+  keyQuestions: string[];
+  sourceIds: string[];
+  cards: TheoryCard[];
 }

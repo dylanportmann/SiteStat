@@ -86,8 +86,7 @@ export const sourceRefs: SourceRef[] = [
   },
   {
     id: "cours",
-    label: "Document Stat 1",
-    url: "file:///Users/dportman/Desktop/stat_theorie_en_un_coup_doeil/index.html"
+    label: "Document Stat 1"
   }
 ];
 
